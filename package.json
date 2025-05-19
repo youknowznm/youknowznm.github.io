@@ -1,0 +1,30 @@
+{
+  "name": "youknowznm.github.io",
+  "version": "1.0.0",
+  "description": "基于 Jekyll 的静态博客，用于存放部分项目的 Demo",
+  "main": "convert.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/youknowznm/youknowznm.github.io.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/youknowznm/youknowznm.github.io/issues"
+  },
+  "homepage": "https://github.com/youknowznm/youknowznm.github.io#readme",
+  "dependencies": {
+    "marked": "^15.0.11"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.27.0",
+    "eslint": "^9.27.0",
+    "eslint-plugin-react": "^7.37.5",
+    "globals": "^16.1.0",
+    "typescript-eslint": "^8.32.1"
+  },
+  "type": "module"
+}
