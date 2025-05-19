@@ -24,8 +24,11 @@ body {
 .blog-footer {
   text-align: center;
   font-size: 12px;
-  font-family: "Geist Mono", monospace;
   margin-bottom: 36px;
+
+  * {
+    font-family: "Geist Mono", monospace;
+  }
 }
 
 .markdown-body {
@@ -111,7 +114,7 @@ body {
     background-color: #ffffff;
   }
 
-  .blog-footer {
+  .blog-footer * {
     color: #59636e;
   }
 
