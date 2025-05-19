@@ -4,9 +4,6 @@ import {join} from "node:path";
 
 const removeExt = (fileName) => fileName.replace(/\.\S+$/g, '')
 
-// eslint-disable-next-line no-undef
-const workingDir = process.cwd()
-
 const wrap = (nameWithoutExt, blogHtml) => `
   <html lang="en">
     <head>
@@ -14,22 +11,20 @@ const wrap = (nameWithoutExt, blogHtml) => `
       <title>youknowznm | ${nameWithoutExt}</title>
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="stylesheet" href="../styles/global.css">
-      
-      <link rel="preconnect" href="https://fonts.googleapis.com">
-      <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-      <link href="https://fonts.googleapis.com/css2?family=Geist:wght@100..900&display=swap" rel="stylesheet">
-      
-<!--      <link rel="shortcut icon" href="./src/images/avatar_mini.png">-->
+      <link rel="shortcut icon" href="../images/avatar.png">
     </head>
     <body>
       <div class="blog-content markdown-body">
         ${blogHtml}
       </div>
+      <footer class="blog-footer">
+        <code>Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank">youknowznm</a>.</code>
+      </footer>
     </body>
   </html>
 `
 
-const blogDir = join(`${workingDir}/blogs`)
+const blogDir = join(`./blogs`)
 
 const blogNames = fs.readdirSync(blogDir)
 

@@ -7,6 +7,27 @@ body {
   padding: 0;
 }
 
+@font-face {
+  font-family: 'Geist';
+  src: url('./Geist[wght].ttf') format('truetype');
+  font-weight: 400 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Geist Mono';
+  src: url('./GeistMono[wght].ttf') format('truetype');
+  font-weight: 400 600;
+  font-style: normal;
+}
+
+.blog-footer {
+  text-align: center;
+  font-size: 12px;
+  font-family: "Geist Mono", monospace;
+  margin-bottom: 36px;
+}
+
 .markdown-body {
   --base-size-4: 0.25rem;
   --base-size-8: 0.5rem;
@@ -23,6 +44,10 @@ body {
 @media (prefers-color-scheme: dark) {
   body {
     background-color: #0d1117;
+  }
+
+  .blog-footer * {
+    color: #9198a1 !important;
   }
 
   .markdown-body, [data-theme="dark"] {
@@ -84,6 +109,10 @@ body {
 @media (prefers-color-scheme: light) {
   body {
     background-color: #ffffff;
+  }
+
+  .blog-footer {
+    color: #59636e;
   }
 
   .markdown-body, [data-theme="light"] {
