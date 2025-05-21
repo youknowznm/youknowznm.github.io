@@ -1,24 +1,28 @@
 import {marked} from 'marked'
-import fs from 'fs'
+import {readdirSync, readFileSync, writeFileSync} from 'node:fs'
 import {join} from "node:path";
 
 const removeExt = (fileName) => fileName.replace(/\.\S+$/g, '')
+
+const githubLink = 'https://github.com/youknowznm'
 
 const getPageHtml = (blogName, blogHtml) => `
   <html lang="en">
     <head>
       <meta charset="utf-8">
-      <title>youknowznm | ${blogName}</title>
+      <title>youknowznm · ${blogName}</title>
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="stylesheet" href="../styles/global.css">
-      <link rel="shortcut icon" href="../images/avatar.png">
+      <link rel="icon" href="../styles/avatar.png">
     </head>
     <body>
       <div class="blog-content markdown-body">
         ${blogHtml}
       </div>
       <footer class="blog-footer">
-        Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank">youknowznm</a>.
+        <p class="blog-footer-code">
+          Made with ❤️ by <a href="${githubLink}" target="_blank" class="blog-footer-code">youknowznm</a>.
+        </p>
       </footer>
     </body>
   </html>
@@ -26,11 +30,14 @@ const getPageHtml = (blogName, blogHtml) => `
 
 const blogDir = join(`./blogs`)
 
-const blogNames = fs.readdirSync(blogDir)
+const blogNames = readdirSync(blogDir)
 
 blogNames.forEach(nameWithExt => {
-  const blogMarkdown = fs.readFileSync(`${blogDir}/${nameWithExt}`, 'utf8')
+  if (!nameWithExt.endsWith('.md')) {
+    return
+  }
+  const blogMarkdown = readFileSync(`${blogDir}/${nameWithExt}`, 'utf8')
   const blogHtml = marked.parse(blogMarkdown)
   const blogName = removeExt(nameWithExt)
-  fs.writeFileSync(`${blogDir}/${blogName}.html`, getPageHtml(blogName, blogHtml))
+  writeFileSync(`${blogDir}/${blogName}.html`, getPageHtml(blogName, blogHtml))
 })

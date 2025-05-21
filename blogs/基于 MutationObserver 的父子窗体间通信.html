@@ -1,0 +1,169 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>youknowznm · 基于 MutationObserver 的父子窗体间通信</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="../styles/global.css">
+  <link rel="icon" href="../styles/avatar.png">
+</head>
+<body>
+<div class="blog-content markdown-body">
+  <h1>基于 MutationObserver 的父子窗体间通信</h1>
+  <h2>基础</h2>
+  <ul>
+    <li>一个浏览器的多个标签页和被嵌入的页都是独立的浏览上下文, 每个上下文都有独立的 <code>window</code> 对象, 之间互不干扰
+    </li>
+    <li>任何窗体中的 JavaScript 都可以:
+      <ul>
+        <li>引用其所在的窗体为 <code>window</code> 或 <code>self</code></li>
+        <li>引用其父级窗体为 <code>parent</code></li>
+        <li>引用其顶级窗体为 <code>top</code></li>
+        <li><code>&lt;iframe&gt;</code> 的 <code>contentWindow</code> 属性指向其 <code>window</code> 对象, <code>contentDocument</code>
+          指向其 <code>document</code> 对象
+        </li>
+        <li><strong>无法访问不同源的窗体除 <code>contentWindow</code> 外的几乎所有属性</strong></li>
+      </ul>
+    </li>
+  </ul>
+  <h2>需求</h2>
+  <ol>
+    <li>在旧项目的某个页面 A 中嵌入新项目的页面 B</li>
+    <li>页面 B 在嵌入页面 A 时, 样式和逻辑与在浏览器窗体正常打开时不同</li>
+    <li>页面 B 的内容高度是不固定的</li>
+    <li>页面 B 加载完成后, 页面 A 需滚动到一定的位置, 使页面 B 上的指定元素进入视口</li>
+    <li><strong>两个项目不同源</strong></li>
+  </ol>
+  <h2>思路</h2>
+  <ol>
+    <li>在页面 A 添加 <code>&lt;iframe&gt;</code> 元素, 指定其 <code>src</code> 为页面 B 的 url</li>
+    <li>对页面 A 中的该 url 添加特殊的 query (如 <code>?isFromPageA=true</code>), 修改页面 B 逻辑, 初始化时若获取到这个
+      query 则特殊对待
+    </li>
+    <li>在页面 B 的加载过程中, 将指定的数据跨越传递给页面 A, 后者需要监听这些数据(4, 5 同理)</li>
+  </ol>
+  <h2>怎样传递?</h2>
+  <h3>1. 发送</h3>
+  <p>在发送者窗体通过 <code>window.postMessage</code> 实现向不同源的另一页面的通信.</p>
+  <pre><code class="language-javascript">// 语法
+receiverWindow.postMessage(message, receiverOrigin, [transfer])
+
+// receiverWindow
+// 接收者窗体的引用. 比如 iframe 的 contentWindow 属性, 通过 window.open 返回的窗体对象
+
+// message
+// 要发送的数据. 可为任意类型, 无需序列化
+
+// receiverOrigin
+// 指定哪些窗体能接收到消息. 可为*或一个 url
+
+// transfer
+// 若干和 message 一起传递的 Transferable 对象. 其所有权会被转移给消息的接收者
+</code></pre>
+  <h3>2. 接收</h3>
+  <p>在接收者窗体监听来自指定源的 <code>message</code> 事件.</p>
+  <pre><code class="language-javascript">window.addEventListener(&#39;message&#39;, receivedMessage, false)
+
+// receivedMessage 有以下属性:
+
+// data
+// 其它窗体传来的消息数据.
+
+// origin
+// postMessage 发送者窗体的源.
+
+// source
+// postMessage 发送者窗体的引用. 可用来在两个窗体间双向通信
+</code></pre>
+  <h2>什么时候传递?</h2>
+  <blockquote>
+    <p>以仅观察页面高度为例</p>
+  </blockquote>
+  <h3>思路一: 对目标元素进行内容轮询, 一段时间内某个属性未产生变动, 则认为已加载完成</h3>
+  <pre><code class="language-javascript">let interval = 500
+let pageHeight = document.body.scrollHeight
+let newPageHeight = 0
+let timerId = setInterval(() =&gt; {
+  newPageHeight = document.body.scrollHeight
+  if (newPageHeight === pageHeight) {
+    clearInterval(timerId)
+    window.parent.postMessage({height: newPageHeight}, &#39;*&#39;)
+  } else {
+    pageHeight = newPageHeight
+  }
+}, interval)
+</code></pre>
+  <h3>不足</h3>
+  <p>难以确定 interval 的有效值.</p>
+  <ul>
+    <li>设置过小, 完成数据请求和渲染的时间大于此间隔, 则传递给页面 A 的未必是加载的最终结果</li>
+    <li>设置过大, 严重影响用户体验</li>
+  </ul>
+  <h3>思路二: 每隔一段时间, 重新获取目标元素的属性, 将其传递给页面 A</h3>
+  <pre><code class="language-javascript">let interval = 500
+setInterval(() =&gt; {
+  window.parent.postMessage({height: document.body.scrollHeight}, &#39;*&#39;)
+}, interval)
+</code></pre>
+  <h3>不足</h3>
+  <ul>
+    <li>没有清除掉计时器(无法得知清除实机)</li>
+    <li>要观察的元素/属性较多时会产生大量的回流, 可能影响性能</li>
+  </ul>
+  <h3>思路三: 使用 <code>MutationObserver</code> + <code>debounce</code> 观察目标元素的属性变动, 只在变动发生时传递消息
+  </h3>
+  <pre><code class="language-javascript">// 构造器语法
+let observer = new MutationObserver(callback)
+
+// callback
+// 回调函数. 在指定的目标DOM节点发生变动时调用, 传入的第一个参数为由MutationRecord对象构成的数组
+// MutationRecord包含以下属性:
+//   - type: childList|attributes|characterData(见下)
+//   - target: 此次变动具体影响到的节点
+//   - 其它属性记录具体变动, 不一一列举了
+</code></pre>
+  <pre><code class="language-javascript">// 实例语法
+observer.observe(targetNode, optionObj)
+
+// targetNode
+// 要观察的 DOM 节点.
+
+// optionObj
+// 选项对象. 可配置:
+//   - childList: 需要观察目标节点的子节点(新增或移除), 则设置为 true
+//   - attributes: 需要观察目标节点的属性节点( nodeType 为2), 则设置为 true
+//   - characterData: 需要观察目标节点的文本或注释节点( nodeType 为3或8), 则设置为 true
+//   - subtree: 需要观察目标节点的所有后代节点, 则设置为 true
+//   - 其它配置项用于记录属性的旧值和过滤指定的属性, 不一一列举了
+</code></pre>
+  <h3>优点</h3>
+  <ul>
+    <li>把 DOM 变动记录封装成一个数组进行处理，而不是一条条地单独处理</li>
+    <li>可配置, 方便精细地控制观察的范围</li>
+    <li>属于异步的微任务(类似 xhr, promise 和 DOM 事件), 与 <code>setInterval</code> 等宏任务相比执行更快</li>
+  </ul>
+  <h3>实现</h3>
+  <pre><code class="language-javascript">let debouncedPostMessage = debounce(msgObj =&gt; {
+  window.parent.postMessage(msgObj, &#39;*&#39;)
+}, 200)
+let observer = new MutationObserver(() =&gt; {
+  // 观察范围较大, 会触发很多次, 不妨用 debounce 优化
+  debouncedPostMessage({pageHeight: document.body.scrollHeight})
+})
+observer.observe(document.querySelector(&#39;.target-area&#39; /* 观察 body 或其它元素均可 */), {
+  childList: true,
+  subtree: true
+})
+</code></pre>
+  <h3>不足</h3>
+  <ul>
+    <li>IE11 及以上才支持, 可按需使用 <a href="https://github.com/megawac/MutationObserver.js">polyfill</a></li>
+  </ul>
+
+</div>
+<footer class="blog-footer">
+  <p class="blog-footer-code">
+    Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
+  </p>
+</footer>
+</body>
+</html>

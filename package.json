@@ -1,10 +1,10 @@
 {
   "name": "youknowznm.github.io",
   "version": "1.0.0",
-  "description": "基于 Jekyll 的静态博客，用于存放部分项目的 Demo",
-  "main": "convert.js",
+  "description": "",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "convert": "node scripts/convertToHtml.js",
+    "clean": "node scripts/cleanHtml.js"
   },
   "repository": {
     "type": "git",

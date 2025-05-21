@@ -1,0 +1,191 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>youknowznm · 费用报销系统多屏互动的实现</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <link rel="stylesheet" href="../styles/global.css">
+  <link rel="icon" href="../styles/avatar.png">
+</head>
+<body>
+<div class="blog-content markdown-body">
+  <h1>费用报销系统多屏互动的实现</h1>
+  <p>本文为<a
+      href="https://youknowznm.github.io/blogs/%E8%B4%B9%E7%94%A8%E6%8A%A5%E9%94%80%E7%B3%BB%E7%BB%9F%E5%B1%95%E5%BC%80%E8%A1%A8%E6%A0%BC%E8%A1%8C%E7%9A%84%E5%AE%9E%E7%8E%B0">费用报销系统展开表格行的实现</a>的后续.
+  </p>
+  <h2>需求背景</h2>
+  <p>公司即时通讯 Hi app 内嵌的移动报销 web 应用, 可提供:</p>
+  <ul>
+    <li>导出随手记, 语音填报, 发票识别等功能</li>
+    <li>可以智能生成费用行, 自动上传并使用发票</li>
+  </ul>
+  <p>PC 端报销应用则提供:</p>
+  <ul>
+    <li>细粒度的编辑功能</li>
+  </ul>
+  <p>将二者结合起来, 可进一步优化流程效率和用户体验.</p>
+  <p><img
+      src="../images/%E5%A4%9A%E5%B1%8F%E4%BA%92%E5%8A%A8/%E5%A4%9A%E5%B1%8F%E4%BA%92%E5%8A%A8%E9%9C%80%E6%B1%82.png"
+      alt=""></p>
+  <p>引出需求:</p>
+  <ul>
+    <li>移动端和 PC 端均有一个费用明细列表, 均可支持以每行为单位进行增/删/改</li>
+    <li>一端操作后, 另一端可自动更新, 并且 PC 端收到改动需以动画效果呈现, 称之为多屏互动</li>
+  </ul>
+  <p>我负责了方案的梳理和 PC 端的实现.</p>
+  <h2>方案和实现</h2>
+  <p>PC 端/移动端成功进行了增/删/改, 通知了服务端, 服务端要<strong>主动</strong>通知到移动端/PC 端.<br>有双向通讯的需求,
+    用 WebSocket, 不用轮询, 关于前者优点的文章很多, 此处不展开.</p>
+  <p>方案核心是维护一个前端的 socket 处理器模块.</p>
+  <p>用户通过 UI 开启多屏互动,</p>
+  <p>先从远端获取指定的 socket 服务 URL 并连接; 同时获取 Hi 端移动报销对应报销单页面的短链接, 生成二维码,</p>
+  <p>用户扫码连接, 开始移动端的编辑;</p>
+  <p>移动端更新成功后, 远端会通知 socket 服务, socket 处理器收到信息.</p>
+  <p>建立 socket 连接的同时会开始 10s 一次的心跳检测, 未收到回应(如页面意外关闭)或者在一端手动退出,
+    则两端均退出多屏互动.</p>
+  <h2>通信内容</h2>
+  <p>一端更新成功后, 要通知另一端以下的数据:</p>
+  <ol>
+    <li>消息类型, 可能为增/删/改或某种 UI 交互</li>
+    <li>数组增删改的具体项</li>
+  </ol>
+  <ul>
+    <li>哪一行被更新了</li>
+    <li>更新了哪些内容</li>
+  </ul>
+  <ol start="3">
+    <li>上次任意一端修改成功的时间戳, 用以避免两端数据改动未同步的情况</li>
+  </ol>
+  <p>受限于后端, 前端只能一次获取<strong>整个表格</strong>而无法直接得到更新了的行的内容. 因此(2)中的两部分均以 socket
+    消息告知, 后端提供*
+    <em>增/删/改了的行号<strong>和</strong>更新后的整个表格数组*</em>, 其它逻辑前端处理.</p>
+  <blockquote>
+    <p>其它业务场景中, 有可能 更新内容的标识 和 详细的更新内容 不需要同时获取:<br>例如更新的详细内容体积过大/响应慢/只需在一定情况下获取.<br>这种情况可以考虑只通过
+      socket 拿到前者, 再通过前端主动发起的 ajax 获取后者, 提高性能.</p>
+  </blockquote>
+  <h2>数据流动图示</h2>
+  <p>总体的数据流动如下图.</p>
+  <p><img src="/files/cJiCdx6_y7WNkaz.png" alt=""></p>
+  <h2>难点一: 不受 react 控制的动画</h2>
+  <p>如需求描述, 移动端增/删/改成功后, 该行的改动要在 PC 端以动画的形式体现. 但所使用的自研 <code>Table</code> 组件有一个缺陷:
+  </p>
+  <blockquote>
+    <p>其接受一个数组 prop 作为整个表格的数据, 无法观测到数组具体某一项的改动.</p>
+  </blockquote>
+  <p>由于获取不到某一行的 ref, 也不能直接用 <code>react-transition-group</code> 实现动画.</p>
+  <p>收到 socket 消息后, 计算出数组中实际变动的项, 通过 <code>document.querySelector(&#39;[data-id=xxx]&#39;)</code>
+    获取更新的行号所对应的 DOM,
+    对它进行 splice:</p>
+  <ul>
+    <li>对数组增加/修改项时, 先更新再动画</li>
+    <li>删除项时相反, 并且复用增加的关键帧</li>
+  </ul>
+  <p>动画会产生在 <code>&lt;tr&gt;</code> 及其子元素上, 且同一时刻最多有一个.<br>还要监听 <code>animationstart</code> 和
+    <code>animationend</code>, 在期间禁用表格的展开/收起/编辑等操作.</p>
+  <p>动画类的样式如下:</p>
+  <pre><code class="language-scss">/* 行更新动画 */
+
+$appended-anim-duration: .75s;
+$updated-anim-duration: 1.5s;
+
+.bill-detail-list-table .erp-table-tbody tr {
+  &amp;.updated {
+    animation: updated-anim $updated-anim-duration linear;
+    @keyframes updated-anim {
+      0% {
+        background-color: transparent;
+      }
+      15% {
+        background-color: # #fff176;
+      }
+      100% {
+        background-color: transparent;
+      }
+    }
+  }
+
+  &amp;.appended {
+    animation: appended-anim-td-wrap $appended-anim-duration;
+    @keyframes appended-anim-td-wrap {
+      0% {
+        height: 0;
+        opacity: 0;
+      }
+      60% {
+        opacity: 0;
+      }
+      100% {
+        height: auto;
+        opacity: 1;
+      }
+    }
+
+    td {
+      animation: appended-anim-td $appended-anim-duration;
+      @keyframes appended-anim-td {
+        0% {
+          height: 0;
+          padding-top: 0;
+          padding-bottom: 0;
+        }
+        60% {
+          transform: scale(1.5);
+        }
+        100% {
+          height: 42px;
+          padding-top: 12px;
+          padding-bottom: 12px;
+        }
+      }
+    }
+
+    div {
+      animation: appended-anim-div $appended-anim-duration;
+      @keyframes appended-anim-div {
+        0% {
+          height: 0;
+        }
+        100% {
+          height: 17px;
+        }
+      }
+    }
+  }
+
+  &amp;.removed {
+    height: 0;
+    border: 0;
+    opacity: 0;
+    animation: appended-anim-td-wrap $appended-anim-duration reverse;
+
+    td {
+      height: 0;
+      padding-top: 0;
+      padding-bottom: 0;
+      animation: appended-anim-td $appended-anim-duration reverse;
+    }
+
+    div {
+      height: 0;
+      animation: appended-anim-div $appended-anim-duration reverse;
+    }
+  }
+}
+</code></pre>
+  <h2>难点二: PC 端编辑某行时, 移动端发生更新的处理</h2>
+  <p>多屏互动时数据数组的改动来源有两个: socket 信息和<a href="/article?id=cJiCdx6">之前提到的行内编辑器</a>.<br>对这两种来源的协同处理也是技术难点之一.
+  </p>
+  <p>PC 端编辑某行时, 移动端也对某行进行了增/删/改, 有十种左右的可能场景. 总结为:</p>
+  <ol>
+    <li>移动端修改了 PC 端正在编辑的行, 需要用户确认保留哪份数据</li>
+    <li>移动端删除了 PC 端正在编辑的行, 提示并移除当前行</li>
+    <li>PC 端编辑某行, 移动端增/删: 更新后重新计算被编辑行的索引, 并恢复之前编辑的内容</li>
+  </ol>
+
+</div>
+<footer class="blog-footer">
+  <p class="blog-footer-code">
+    Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
+  </p>
+</footer>
+</body>
+</html>

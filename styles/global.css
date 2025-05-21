@@ -25,10 +25,10 @@ body {
   text-align: center;
   font-size: 12px;
   margin-bottom: 36px;
+}
 
-  * {
-    font-family: "Geist Mono", monospace;
-  }
+.blog-footer-code {
+  font-family: "Geist Mono", monospace;
 }
 
 .markdown-body {
@@ -49,8 +49,8 @@ body {
     background-color: #0d1117;
   }
 
-  .blog-footer * {
-    color: #9198a1 !important;
+  .blog-footer-code {
+    color: #9198a1;
   }
 
   .markdown-body, [data-theme="dark"] {
@@ -114,7 +114,7 @@ body {
     background-color: #ffffff;
   }
 
-  .blog-footer * {
+  .blog-footer-code {
     color: #59636e;
   }
 
