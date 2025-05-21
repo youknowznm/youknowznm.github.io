@@ -1,0 +1,65 @@
+
+  <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>youknowznm · 使用 cookie 监听 octet-stream 类型响应的进度</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <link rel="stylesheet" href="../styles/global.css">
+      <link rel="icon" href="../styles/avatar.png">
+      <link rel="stylesheet" href="../utils/highlightjs/default.min.css">
+      <script src="../utils/highlightjs/highlight.min.js"></script>
+      <script>hljs.highlightAll()</script>
+    </head>
+    <body>
+      <div class="blog-content markdown-body">
+        <h1>使用 cookie 监听 octet-stream 类型响应的进度</h1>
+<h2>现有的下载组件逻辑</h2>
+<ol>
+<li>提供一个可见的表单和一个隐藏的 <code>iframe</code>, 通过同一个 <code>rmd</code> 设置它们的 <code>id</code> 和 target</li>
+</ol>
+<ul>
+<li>该表单的 <code>target</code> 为 iframe, <code>action</code> 为 目标 url</li>
+</ul>
+<ol start="2">
+<li>表单包含一个可见的 <code>submit</code> 按钮, 若干个 <code>type=hidden</code> 的 <code>input</code></li>
+<li>这些 <code>input</code> 的值通过 <code>prop</code> 被传入组件, 在点击 <code>submit</code> 提交表单时作为 <code>post</code> 请求的 <code>param</code></li>
+<li>设置表 <code>target</code> 为 <code>iframe</code> 时,表单的回复会加载在这个 <code>iframe</code> 里</li>
+</ol>
+<ul>
+<li><strong>注意后端对此没有处理, 报错就随便报了, 没有返回到前端</strong></li>
+</ul>
+<ol start="5">
+<li>如果后端处理成功, 会以 <code>content-type: octec-stream</code> 二进制文件的形式响应, 浏览器对其的默认处理方式就是下载</li>
+</ol>
+<h2>问题</h2>
+<ol>
+<li>后端处理 <code>submit</code> 失败时, 没有给前端通知</li>
+<li><strong>由于请求以流的形式返回, 前端无法拿到下载结束(成功或失败)的钩子</strong></li>
+</ol>
+<h2>影响场景</h2>
+<p>典型地, 在请求导出包含大量数据的 Excel 文件时, 响应时间会很长.<br>需要基于 UI loading 相关的交互, 并得知下载结果成功与否.</p>
+<h2>改进</h2>
+<ol>
+<li>提供可配置的组件 prop <code>type</code>, 值为 <code>onload</code> 或 <code>cookie</code></li>
+<li>选 <code>onload</code> 则延用原逻辑, 选 <code>cookie</code> 则将初始化时的 <code>rmd</code> 以 <code>token</code> 形式作为一个 <code>input</code> 传入表单</li>
+<li>后端拿到本次请求的 token(如 <code>foo</code>), 处理数据</li>
+<li>处理完成后将结果(Y/N) 作为名为 <code>download-foo</code> 的 cookie 值</li>
+</ol>
+<ul>
+<li>成功则返回文件流</li>
+<li>失败则以 <code>json</code> 形式返回错误内容, 填入 <code>iframe</code></li>
+</ul>
+<ol start="5">
+<li>前端在表单提交时, 即开始轮询名为 <code>download-foo</code> 的 cookie, 有值后 (Y/N) 则认为请求已经成功/失败</li>
+</ol>
+<h2>更多</h2>
+<p>也许可以结合 <code>XMLHttpRequest.onprogress</code> 事件和响应头的 <code>content-length</code> 来实现和优化, 后续再调研</p>
+
+      </div>
+      <footer class="blog-footer">
+        <p class="blog-footer-code">
+          Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
+        </p>
+      </footer>
+    </body>
+  </html>

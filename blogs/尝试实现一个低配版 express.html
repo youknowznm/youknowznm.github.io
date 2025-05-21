@@ -1,0 +1,279 @@
+
+  <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>youknowznm · 尝试实现一个低配版 express</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <link rel="stylesheet" href="../styles/global.css">
+      <link rel="icon" href="../styles/avatar.png">
+      <link rel="stylesheet" href="../utils/highlightjs/default.min.css">
+      <script src="../utils/highlightjs/highlight.min.js"></script>
+      <script>hljs.highlightAll()</script>
+    </head>
+    <body>
+      <div class="blog-content markdown-body">
+        <h1>尝试实现一个低配版 express</h1>
+<p>使用 nodejs 时不一定用到 express 这样重型的框架. 例如将其作为站点的 API 层, 不负责渲染数据到模板里并返回, 所有路由以
+JSON 结束响应. 这里尝试实现一个简单的服务器, 提供和 express
+相似的路由和中间件接口.</p>
+<h2>路由</h2>
+<p>先看下 nodejs HTTP 模块的创建服务器方法:</p>
+<pre><code class="language-javascript">/**
+ @param requestListener {Function} 对请求的监听函数, 传入 req 和 res 两个参数
+ @return server {http.Server} 一个服务器实例
+ */
+http.createServer(requestListener)
+</code></pre>
+<p>每个 http 请求到来时, 参数方法内的逻辑都会被执行. 需要有一个路由对象组成的数组, 针对每一个请求遍历它, 获取匹配的路由, 对
+req 对象进行处理, 再调用 res 的 <code>writeHead</code>, <code>end</code> 等方法, 结束响应.
+注意这里的 req 和 res 分别是 Node 原生的 <code>http.ClientRequest</code> 和 <code>http.ServerResponse</code> 类的实例, 不是经过 express 增强的
+<code>Request</code> 和 <code>Response</code>.</p>
+<p>这样, 每个路由对象应该包含三个属性: 请求方法(method), 请求 URL(path)和处理函数(handler). 仿照 express 的 API, 通过
+<code>app.method(path, handler)</code> 形式添加路由.
+大致的结构如下:</p>
+<pre><code class="language-javascript">// 创建一个 MiniExpress 类
+class MiniExpress {
+  constructor() {
+    this.routes = []
+    // 把常用的 http 方法动词存入一个数组, 最后加上 express 风格的 &#39;all&#39;, 可匹配所有方法
+    const HTTP_METHODS = [&#39;get&#39;, &#39;post&#39;, &#39;put&#39;, &#39;delete&#39;, &#39;options&#39;, &#39;all&#39;]
+    // 遍历方法名的数组, 给本类添加同名的成员方法
+    // 该方法接受 path 和 handler 两个参数, 在被调用时推入一个路由对象至路由数组
+    HTTP_METHODS.forEach((method) =&gt; {
+      this[method] = (path, handler) =&gt; {
+        this.routes.push({method, path, handler})
+      }
+    })
+  }
+}
+</code></pre>
+<p>这时如果:</p>
+<pre><code class="language-javascript">const app = new MiniExpress()
+app.get(&#39;/&#39;, (req, res) =&gt; {
+  res.end(&#39;This is index.&#39;)
+})
+</code></pre>
+<p>调用后的路由数组是这样的:</p>
+<pre><code class="language-javascript">[
+  {
+    method: &#39;get&#39;,
+    path: &#39;/&#39;,
+    handler: (req, res) =&gt; {
+      res.end(&#39;This is index.&#39;)
+    },
+  },
+]
+</code></pre>
+<p>接收到一个请求时, 遍历这个数组. 找到了方法名和路径都匹配的目标数组对象后, 返回它的处理函数(即定义的接受 req 和 res
+两个参数的函数). 在类中定义这个成员方法:</p>
+<pre><code class="language-javascript">class MiniExpress {
+  constructor() {
+    // ...
+  }
+
+  getRouterHandler(targetMethod, targetPath) {
+    // 如果找不到目标路由, 则以一条错误字符串结束相应
+    let resultFn = (req, res) =&gt; {
+      res.end(`## Router Not Found: ${targetMethod} ${targetPath}`)
+    }
+    for (let route of routes) {
+      const {path, method, handler} = route
+      if ([targetPath, &#39;*&#39;].includes(path) &amp;&amp; [targetMethod, &#39;all&#39;].includes(method)) {
+        // 如果找到了目标路由, 则返回其处理函数
+        // 模仿 express 的风格, &#39;*&#39; 可匹配所有 path, &#39;all&#39; 可匹配所有 method
+        resultFn = handler
+        break
+      }
+    }
+    return resultFn
+  }
+}
+</code></pre>
+<p>还需要一个传入 <code>http.createServer()</code> 的参数 <code>requestListener</code>, 它要做的事情是: 获取请求的方法和路径, 调用上面定义的
+getRouterHandler, 以合适的处理函数结束相应.</p>
+<pre><code class="language-javascript">class MiniExpress {
+  constructor() {
+    // ...
+  }
+
+  getRouterHandler(targetMethod, targetPath) {
+    // ...
+  }
+
+  // 定义对所有请求的监听函数, 用作 http.createServer() 的参数
+  requestListener(req, res) {
+    const method = req.method.toLowerCase()
+    const pathname = require(&#39;url&#39;).parse(req.url).pathname
+    // 通过 getRouterHandler 获取路由的处理函数, 调用之, 传入 req 和 res
+    getRouterHandler(this.routes, method, pathname)(req, res)
+  }
+}
+</code></pre>
+<p>在定义了所有需要的路由之后, 要调用 <code>http.Server</code> 实例的 listen 方法, 在指定的主机和端口上开启服务器, 监听连接. 在类上添加
+listen 成员方法.</p>
+<pre><code class="language-javascript">class MiniExpress {
+  constructor() {
+    // ...
+  }
+
+  getRouterHandler(targetMethod, targetPath) {
+    // ...
+  }
+
+  requestListener(req, res) {
+    // ...
+  }
+
+  // 默认在本地的4000端口监听. 服务器就绪后打印 log
+  listen(port = 4000, host = &#39;localhost&#39;) {
+    http
+        .createServer(this.requestListener)
+        .listen(port, host, () =&gt; {
+          console.log(`## Mini-express running at ${host}\:${port}. ##`)
+        })
+  }
+}
+</code></pre>
+<p>以上就基本实现了路由池的功能, 关键思路自己以前有想到过了.
+刚好最近看了一篇<a href="https://saul-mirone.github.io/2017/01/08/express-core/">文章</a>, 里面提到了中间件的实现思路,
+可以改进一下以上的代码.</p>
+<p>以前自己用 express 时没有很深入, 对 <code>app.use</code> 方法的了解只是: 它是一个针对全局所有路由的逻辑, 可以用于增强, 修改或过滤请求,
+例如:</p>
+<pre><code class="language-javascript">const express = require(&#39;express&#39;)
+const cookieParser = require(&#39;cookie-parser&#39;)
+const bodyParser = require(&#39;body-parser&#39;)
+const session = require(&#39;express-session&#39;)
+const app = express()
+app.use(bodyParser.json())
+app.use(cookieParser())
+app.use(session({/* ... */}))
+</code></pre>
+<p>实际上 use 方法可以指定第一个参数为路径, 只针对符合该路径的路由进行处理. 上面代码的中间件增强了所有路由的请求对象的
+<code>body</code>, <code>cookie</code> 和 <code>session</code>, 省略掉了路径参数.
+所以一个典型的中间件使用方法是这样的:</p>
+<pre><code class="language-javascript">const app = express()
+// 添加中间件
+app.use(&#39;/secret&#39;, (req, res) =&gt; {
+  if (/* 校验通过 */) {
+    next()
+  } else {
+    res.writeHead(404, {&#39;Content-Type&#39;: &#39;text/html;charset=utf-8&#39;})
+    res.end(&#39;Unauthorized.&#39;)
+  }
+})
+app.get(&#39;/secret&#39;, (req, res) =&gt; {
+  res.end(&#39;Secret!&#39;)
+})
+</code></pre>
+<p><code>app.use</code> 和 <code>app.get</code> 的用法很像, 那么为什么不把 use 也看成一个路由的方法呢？
+<code>use</code> 的特性之一是它所接受的监听函数参数, 可以接受第三个参数 <code>next</code>. next
+也是<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/function*">生成器函数</a>
+所返回的<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator">生成器对象</a>
+的方法之一:</p>
+<pre><code class="language-javascript">const generator = function* (arr) {
+  yield* arr
+}
+const gen = generator([1, 2, 3])
+gen.next() // {value: 1, done: false}
+gen.next() // {value: 2, done: false}
+gen.next() // {value: 3, done: false}
+gen.next() // {value: undefined, done: true}
+</code></pre>
+<p>调用一个生成器函数并不会马上执行它里面的语句, 而是返回一个该生成器的迭代器(iterator)对象, 它的 next 方法会返回一个对象,
+其 value 是迭代器返回的值, 迭代结束后为为 <code>undefined</code>. 由于传给了
+generator 方法一个可迭代的数组为参数, 其中的 <code>yield*</code> 表达式就会依次返回该数组的项. 在连续两次 <code>next()</code> 调用之间,
+迭代器对象是被&#39;暂停&#39;后恢复执行的. 根据这个特点, 我们对
+getRouterHandler 方法修改如下:</p>
+<pre><code class="language-javascript">class MiniExpress {
+  constructor() {
+    // ...
+  }
+
+  getRouterHandler(targetMethod, targetPath) {
+    const generator = function* (arr) {
+      yield* arr
+    }
+    const routeIterator = generator(this.routes)
+    return (req, res) =&gt; {
+      ;(function next() {
+        const thisRoute = routeIterator.next().value
+        // 1 - 已经遍历结束
+        if (thisRoute === undefined) {
+          res.end(`Cannot ${targetMethod} ${targetPath}`)
+          return
+        }
+        const {method, path, handler} = thisRoute
+        // 2 - 匹配到了符合的路由
+        if ([targetMethod, &#39;all&#39;].includes(method) &amp;&amp; [targetPath, &#39;*&#39;].includes(path)) {
+          handler(req, res)
+          return
+        }
+        // 3 - 匹配到了中间件
+        if (method === &#39;use&#39; &amp;&amp; [targetPath, &#39;/&#39;].includes(path)) {
+          handler(req, res, next)
+          return
+        }
+        next()
+      }())
+    }
+  }
+
+  requestListener(req, res) {
+    // ...
+  }
+
+  listen(port = 4000, host = &#39;localhost&#39;) {
+    // ...
+  }
+}
+</code></pre>
+<p>如上, 使用路由迭代器 routeIterator 代替路由数组的 <code>for in</code> 循环. 在 <code>app.use()</code> 时, next 会被传入 handler 作为第三个参数.
+在业务逻辑内可以进行条件判断, 满足条件时调用
+next(), 将执行权交给路由迭代器. 这时迭代器会从前面暂停的地方————也就是这个 use. 路由对象的下一个路由继续迭代；如不满足条件则抛出异常或以一个错误信息结束响应,
+next 不会被调用, 自然也不会执行暂停位置之后的路由.</p>
+<p>因此, 为某个路由添加中间件的逻辑, 必须位于该路由的实际请求处理逻辑之前. 如果对下面代码的 use 和 get 语句交换位置,
+则该中间件永远不会生效.</p>
+<pre><code class="language-javascript">app.use(&#39;/secret&#39;, (req, res, next) =&gt; {
+  // ...
+})
+app.get(&#39;/secret&#39;, (req, res) =&gt; {
+  // ...
+})
+</code></pre>
+<h2>增强请求和响应对象</h2>
+<p>express 提供的 Response 和 Request 接口, 实际上就是对上文提到的原生 <code>ClientRequest</code> 和 <code>ServerResponse</code> 的一定程度的封装.
+所以在实际使用 MiniExpress 框架时,
+可以按需添加一些方法, 以实现对它们的增强, 用增强后的对象代替 getRouterHandler 中执行路由处理函数时传入的原生对象.<br>例如实现 express 的 <code>res.json</code> 方法:</p>
+<pre><code class="language-javascript">
+// 增强 res, 可按需添加其它方法
+const enhanceRes = (res) =&gt; {
+  // 以 json 结束响应
+  res.json = (data) =&gt; {
+    res.setHeader(&#39;Content-Type&#39;, &#39;application/json&#39;)
+    res.end(JSON.stringify(data))
+  }
+  return res
+}
+
+class MiniExpress {
+  getRouterHandler() {
+    // ...
+    handler(req, enhanceRes(res))
+    // ...
+  }
+}
+</code></pre>
+<p>根据实际需要对 req 也进行类似的处理即可.</p>
+<h2>总结</h2>
+<p>以上只实现了 express 很基础的功能, 像静态文件处理, 模板渲染这里都没有实现, 到实际项目中再按需添加吧. 不过大部分 express
+可用的中间件在这个框架中也是可用的.</p>
+<p>完整代码在<a href="https://github.com/youknowznm/mini-express/blob/master/mini-express.js">这里</a>. </p>
+
+      </div>
+      <footer class="blog-footer">
+        <p class="blog-footer-code">
+          Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
+        </p>
+      </footer>
+    </body>
+  </html>

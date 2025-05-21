@@ -1,0 +1,180 @@
+
+  <html lang="en">
+    <head>
+      <meta charset="utf-8">
+      <title>youknowznm · 人效统计项目的气泡图思路和实现</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <link rel="stylesheet" href="../styles/global.css">
+      <link rel="icon" href="../styles/avatar.png">
+      <link rel="stylesheet" href="../utils/highlightjs/default.min.css">
+      <script src="../utils/highlightjs/highlight.min.js"></script>
+      <script>hljs.highlightAll()</script>
+    </head>
+    <body>
+      <div class="blog-content markdown-body">
+        <h1>人效统计项目的气泡图思路和实现</h1>
+<h2>需求</h2>
+<p>如下, 有一个中心元素, 其周围有 3~6 个元素, 按各自权重呈现不同的大小, 称为气泡图.</p>
+<p><img src="../images/%E6%B0%94%E6%B3%A1%E5%9B%BE/%E9%9C%80%E6%B1%821.png" alt="">
+<img src="../images/%E6%B0%94%E6%B3%A1%E5%9B%BE/%E9%9C%80%E6%B1%822.png" alt=""></p>
+<p>调研了市面上常见图表库, 没有类似场景的示例.</p>
+<h2>思路</h2>
+<p>马上想到, 周围元素相对于中心平移, 形成规则的三/四/五/六边形, 再根据处理后的权重进行缩放.</p>
+<h2>细节</h2>
+<h3>1. 单个气泡及文字内容</h3>
+<p>首先完成单个的气泡, 期望在一定缩放范围内, 内部文字都能完整协调地展示.<br>考虑到浏览器的最小字号特性, 且业务上文字长度最大为 12, 最终:</p>
+<ul>
+<li>容器元素用 <code>border-radius</code> 处理为圆形, 内部元素按百分比绝对定位, 呈现为圆形中心的最大正方形</li>
+<li>内部的文字内容水平垂直居中;</li>
+<li>先设置容器整体的尺寸, 使文字长度最大时仍不会溢出, 再按设计稿对其缩放</li>
+</ul>
+<p>此时即为中心元素和原始大小的周围元素的样式</p>
+<pre><code class="language-scss">.circle {
+  // ...
+  position: absolute;
+  border-radius: 50%;
+
+  .square {
+    // ...
+    position: absolute;
+    $margin-to-circle: 15%;
+    top: $margin-to-circle;
+    right: $margin-to-circle;
+    bottom: $margin-to-circle;
+    left: $margin-to-circle;
+  }
+}
+</code></pre>
+<h3>2. 整体布局</h3>
+<ul>
+<li>所有气泡初始都绝对定位在中心</li>
+<li>js 根据周围气泡的数量(3~6)设置容器类, css 平移得到整体上规则的形状</li>
+<li>再打乱下排序, 不完全在顺时针上降序</li>
+</ul>
+<pre><code class="language-scss">.bubble-chart {
+  $size: 210px;
+
+  &amp;.triangle {
+    .circle.sub:nth-of-type(4) {
+      transform: translateX(0px) translateY(-$size);
+    }
+
+    .circle.sub:nth-of-type(2) {
+      transform: translateX(.88 * $size) translateY(.5 * $size);
+    }
+
+    .circle.sub:nth-of-type(3) {
+      transform: translateX(-.88 * $size) translateY(.5 * $size);
+    }
+
+    .circle.sub:nth-of-type(5),
+    .circle.sub:nth-of-type(6),
+    .circle.sub:nth-of-type(7) {
+      display: none;
+    }
+  }
+
+  &amp;.square {
+    // ...
+  }
+
+  &amp;.pentagon {
+    // ...
+  }
+
+  &amp;.hexagon {
+    .circle.sub:nth-of-type(2) {
+      transform: translateX(-.88 * $size) translateY(-.5 * $size);
+    }
+
+    .circle.sub:nth-of-type(4) {
+      transform: translateX(0px) translateY(-$size);
+    }
+
+    .circle.sub:nth-of-type(3) {
+      transform: translateX(.88 * $size) translateY(-.5 * $size);
+    }
+
+    .circle.sub:nth-of-type(5) {
+      transform: translateX(.88 * $size) translateY(.5 * $size);
+    }
+
+    .circle.sub:nth-of-type(7) {
+      transform: translateX(0px) translateY($size);
+    }
+
+    .circle.sub:nth-of-type(6) {
+      transform: translateX(-.88 * $size) translateY(.5 * $size);
+    }
+  }
+}
+</code></pre>
+<h3>3. 气泡的缩放</h3>
+<p>数据结构如下, 是递减的:</p>
+<pre><code class="language-json">{
+  &quot;coordination&quot;: {
+    &quot;orgNameRank1&quot;: &quot;技术中台质量部&quot;,
+    &quot;weight1&quot;: 1.84861614903053,
+    &quot;orgNameRank2&quot;: &quot;技术中台用户体验部&quot;,
+    &quot;weight2&quot;: 1.68955126443489,
+    &quot;orgNameRank3&quot;: &quot;AIG综合管理部&quot;,
+    &quot;weight3&quot;: 1.66691738742104,
+    &quot;orgNameRank4&quot;: &quot;TPG人力资源部&quot;,
+    &quot;weight4&quot;: 1.6437778309971,
+    &quot;orgNameRank5&quot;: &quot;运维部&quot;,
+    &quot;weight5&quot;: 1.62436690549733,
+    &quot;orgNameRank6&quot;: &quot;财务部&quot;,
+    &quot;weight6&quot;: 1.60143930010733
+  }
+}
+</code></pre>
+<p>权重的取值范围很大. 由于气泡大小描述的是<strong>气泡之间的关系</strong>, 先处理他们为每项相对于总和的平均数:</p>
+<pre><code class="language-js">let weights = [&quot;1.101&quot;, &quot;1.006&quot;, &quot;0.993&quot;, &quot;0.979&quot;, &quot;0.967&quot;, &quot;0.953&quot;]
+</code></pre>
+<p>上面情况的数据可以直接作为缩放比(即 <code>transform: scale</code> 的值), 但最大/最小项超过 1.3 / 0.8 (设计图上的最大/最小缩放比)时,
+会非常不协调:</p>
+<pre><code class="language-js">let weights = [&quot;1.537&quot;, &quot;1.317&quot;, &quot;1.171&quot;, &quot;0.878&quot;, &quot;0.585&quot;, &quot;0.512&quot;]
+</code></pre>
+<p><img src="../images/%E6%B0%94%E6%B3%A1%E5%9B%BE/%E4%B8%8D%E5%8D%8F%E8%B0%83%E7%9A%84%E5%AE%9E%E7%8E%B0.png" alt=""></p>
+<p>问题来了, 怎样把上述情况转换为合理的缩放比呢?</p>
+<h4>3.1 抹平增减趋势</h4>
+<p>自己的方案是: 当缩放比超过设计的极值时, 抹平整个数组的增减趋势, 不让首项/末项超过极值. 以首项为例:</p>
+<ol>
+<li>首项 <code>largest</code> &gt; 1.3 时, 减小为 1.3, 并计算出减小的因数 largerBy = <code>(largest - 1.3) / (largest - 1)</code></li>
+<li>遍历, 将值大于 1 的项 <code>val</code> 处理为 <code>val - ((val - 1) * largerBy)</code></li>
+</ol>
+<p>末项 <code>smallest</code> &lt; 0.8 时, 相应地有 smallerBy = <code>(0.8 - smallest) / (1 - smallest)</code>, 其余操作类似.</p>
+<p>这样在尽量维持增减趋势的同时, 避免了过大/过小的缩放, 算是解决了问题:</p>
+<p><img src="../images/%E6%B0%94%E6%B3%A1%E5%9B%BE/%E6%95%88%E6%9E%9C%E5%B7%AE%E5%88%AB%E4%B8%8D%E6%98%8E%E6%98%BE.png" alt=""></p>
+<h4>3.2 固定最大/最小缩放比</h4>
+<p>提测后, pm 观察上面方案用于大多数数据时, 不足以体现出气泡大小的区别:</p>
+<blockquote>
+<p>总监的数据, 这几个泡泡看不出来差别呢</p>
+</blockquote>
+<p>那怎样看出差别呢? 快速和 pm 确认, 让首项总是 1.3, 末项总是 0.8, 这样就差别明显了.<br>不评价这个方案, 实现为:</p>
+<ol>
+<li>计算出各项之间的差, 相对于首项/末项差的占比 <code>weightOfDiff</code></li>
+<li>声明新的缩放比数组, 首项为 1.3, 之后按 <code>weightOfDiff * (1.3 - 0.8)</code> 递减, 末项总为 0.8</li>
+</ol>
+<p><img src="../images/%E6%B0%94%E6%B3%A1%E5%9B%BE/%E6%9C%80%E7%BB%88%E6%95%88%E6%9E%9C.png" alt=""></p>
+<h2>新思路</h2>
+<p>后续思考, 有更语义化和易于维护的思路:</p>
+<ol>
+<li>周围元素共 n 个, 将每一个放置在&#39;长条&#39;容器内的顶部, 容器中心为中心元素的位置</li>
+<li>处理每个容器, 计算第 i 个的旋转角度 <code>degree = 360 / n * i</code>,</li>
+<li>设置容器 <code>transform: rotate(${degree}deg)</code>, 此时:</li>
+</ol>
+<p><img src="../images/%E6%B0%94%E6%B3%A1%E5%9B%BE/%E6%97%8B%E8%BD%AC.png" alt=""></p>
+<ol start="4">
+<li>对容器内部的文字元素设置 <code>transform: rotate(${-degree}deg)</code> 恢复到水平位置</li>
+</ol>
+<p>旋转长条容器而不是气泡, 原因是:<br>前者默认的 <code>transform-origin</code> 是默认的 <code>center</code>, 即中心元素; 否则还要单独处理后者的 <code>transform-origin</code>.<br>上述逻辑可以用 sass 的函数实现, 个人认为 js 处理更易于维护</p>
+
+      </div>
+      <footer class="blog-footer">
+        <p class="blog-footer-code">
+          Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
+        </p>
+      </footer>
+    </body>
+  </html>

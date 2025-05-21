@@ -14,8 +14,7 @@
       <div class="blog-content markdown-body">
         <h1>webpack require 的大小写敏感问题</h1>
 <h2>问题</h2>
-<p>维护一个 react 老项目时, 遇到了本地开发环境正常, 测试环境进入指定的路由, 按需加载模块时, 报 <code>module not found</code> 的错误(
-没截图了).</p>
+<p>维护一个 react 老项目时, 遇到了本地开发环境正常, 测试环境进入指定的路由, 按需加载模块时, 报 <code>module not found</code> 的错误.</p>
 <p>排查后发现 <code>require</code> 的路径和实际路径的大小写不一致, 修复后问题解决.</p>
 <p>原因很简单, 就是 Linux 文件系统大小写敏感, Windows 和 MacOS 不敏感.</p>
 <h2>处理方案</h2>

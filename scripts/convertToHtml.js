@@ -1,8 +1,7 @@
 import {marked} from 'marked'
 import {readdirSync, readFileSync, writeFileSync} from 'node:fs'
-import {join} from "node:path";
 
-const removeExt = (fileName) => fileName.replace(/\.\S+$/g, '')
+const removeFileNameExt = (fileName) => fileName.replace(/\.\S+$/g, '')
 
 const githubLink = 'https://github.com/youknowznm'
 
@@ -31,16 +30,17 @@ const getPageHtml = (blogName, blogHtml) => `
   </html>
 `
 
-const blogDir = join(`./blogs`)
+const blogSourceDir = './blogSource'
+const blogHtmlDir = './blogs'
 
-const blogNames = readdirSync(blogDir)
+const blogSourceNameList = readdirSync(blogSourceDir)
 
-blogNames.forEach(nameWithExt => {
+blogSourceNameList.forEach(nameWithExt => {
   if (!nameWithExt.endsWith('.md')) {
     return
   }
-  const blogMarkdown = readFileSync(`${blogDir}/${nameWithExt}`, 'utf8')
+  const blogMarkdown = readFileSync(`${blogSourceDir}/${nameWithExt}`, 'utf8')
   const blogHtml = marked.parse(blogMarkdown)
-  const blogName = removeExt(nameWithExt)
-  writeFileSync(`${blogDir}/${blogName}.html`, getPageHtml(blogName, blogHtml))
+  const blogName = removeFileNameExt(nameWithExt)
+  writeFileSync(`${blogHtmlDir}/${blogName}.html`, getPageHtml(blogName, blogHtml))
 })
