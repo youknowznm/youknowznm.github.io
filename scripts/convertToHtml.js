@@ -14,6 +14,9 @@ const getPageHtml = (blogName, blogHtml) => `
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="stylesheet" href="../styles/global.css">
       <link rel="icon" href="../styles/avatar.png">
+      <link rel="stylesheet" href="../utils/highlightjs/default.min.css">
+      <script src="../utils/highlightjs/highlight.min.js"></script>
+      <script>hljs.highlightAll()</script>
     </head>
     <body>
       <div class="blog-content markdown-body">
