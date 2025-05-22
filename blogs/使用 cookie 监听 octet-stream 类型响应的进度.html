@@ -6,13 +6,24 @@
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="stylesheet" href="../styles/global.css">
       <link rel="icon" href="../styles/avatar.png">
-      <link rel="stylesheet" href="../utils/highlightjs/default.min.css">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-macchiato.css" media="(prefers-color-scheme: dark)">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-latte.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
       <script src="../utils/highlightjs/highlight.min.js"></script>
       <script>hljs.highlightAll()</script>
     </head>
     <body>
-      <div class="blog-content markdown-body">
-        <h1>使用 cookie 监听 octet-stream 类型响应的进度</h1>
+      <div class="container">
+        <div class="blog-nav">
+          <ul>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+            <li><a href="">faflfj</a></li>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+          </ul>
+        </div>
+<!--        <div class="nav-trigger" />-->
+        <div class="blog-content-wrap">
+          <div class="blog-content markdown-body">
+            <h1>使用 cookie 监听 octet-stream 类型响应的进度</h1>
 <h2>现有的下载组件逻辑</h2>
 <ol>
 <li>提供一个可见的表单和一个隐藏的 <code>iframe</code>, 通过同一个 <code>rmd</code> 设置它们的 <code>id</code> 和 target</li>
@@ -55,11 +66,13 @@
 <h2>更多</h2>
 <p>也许可以结合 <code>XMLHttpRequest.onprogress</code> 事件和响应头的 <code>content-length</code> 来实现和优化, 后续再调研</p>
 
+          </div>
+        </div>
+        <footer class="blog-footer">
+          <p class="blog-footer-code">
+            Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
+          </p>
+        </footer>
       </div>
-      <footer class="blog-footer">
-        <p class="blog-footer-code">
-          Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
-        </p>
-      </footer>
     </body>
   </html>

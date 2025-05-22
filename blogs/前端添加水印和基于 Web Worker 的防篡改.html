@@ -6,13 +6,24 @@
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="stylesheet" href="../styles/global.css">
       <link rel="icon" href="../styles/avatar.png">
-      <link rel="stylesheet" href="../utils/highlightjs/default.min.css">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-macchiato.css" media="(prefers-color-scheme: dark)">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-latte.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
       <script src="../utils/highlightjs/highlight.min.js"></script>
       <script>hljs.highlightAll()</script>
     </head>
     <body>
-      <div class="blog-content markdown-body">
-        <h1>前端添加水印和基于 Web Worker 的防篡改</h1>
+      <div class="container">
+        <div class="blog-nav">
+          <ul>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+            <li><a href="">faflfj</a></li>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+          </ul>
+        </div>
+<!--        <div class="nav-trigger" />-->
+        <div class="blog-content-wrap">
+          <div class="blog-content markdown-body">
+            <h1>前端添加水印和基于 Web Worker 的防篡改</h1>
 <h2>需求</h2>
 <p>为了预防用户截图造成信息泄露的情况, 在页面的指定区域展示水印, 具体内容为当前登录者用户名的 hash.<br>在前端<strong>尽可能</strong>防止用户对该水印的修改.</p>
 <h2>初步思路</h2>
@@ -51,7 +62,7 @@ url;<br>同时设置其 <code>pointer-events</code> 为 <code>none</code>, 使�
 水印&quot;的思路都不能万无一失.</p>
 <p>好在我们的项目是对内的, 用户基数也比较少, 这里的水印一定程度上只是起到震慑用户不要泄露信息的作用.<br>所以发散一下前端<strong>尽量</strong>防止篡改的技术思路.</p>
 <h2>一个做的不错但还能改进的例子</h2>
-<p>请看这个<a href="https://orgtree.baidu-int.com/orgtree/r#/?r=true">示例</a>, 该页面在 <code>&lt;body&gt;</code> 上设置了水印的 url 作为背景图片. 打开
+<p>请看这个<a target="_blank" href="https://orgtree.baidu-int.com/orgtree/r#/?r=true">示例</a>, 该页面在 <code>&lt;body&gt;</code> 上设置了水印的 url 作为背景图片. 打开
 devtool
 后我们移除掉这个 <code>background-image</code> 行内样式, 会发现很快又恢复原状了.<br>不错不错! 那么有什么破解的方法么.</p>
 <p>猜测有可能是设置了定时器导致了该属性在修改后恢复:</p>
@@ -75,7 +86,7 @@ console.log(lastIntervalId) // 12
 <p>首先尝试在页面内嵌入一个不可见的 <code>iframe</code>, 它只包含一段脚本, 内容是每隔一段时间向父窗体 postMessage,
 通知其重设目标水印所在的元素和具体样式. 但这个思路的漏洞也很多.</p>
 <p>通过 chrome devtool
-的<a href="https://developers.google.com/web/tools/chrome-devtools/console/#execution-context">执行环境选择器</a>可以选择当前
+的<a target="_blank" href="https://developers.google.com/web/tools/chrome-devtools/console/#execution-context">执行环境选择器</a>可以选择当前
 console 所在的 JavaScript 上下文, 用于查看指定执行环境的日志 / 修改其成员等.</p>
 <p>可选的上下文包括但不限于:</p>
 <ol>
@@ -90,10 +101,10 @@ console 所在的 JavaScript 上下文, 用于查看指定执行环境的日志 
 <ol>
 <li>分别通过 <code>DOMAttrModified</code> 和 <code>DOMNodeRemoved</code> 事件监听它们. 这种方式缺点很多, 一是如前所述, DOM 元素的任何监听事件都能通过
 devtool 禁用;
-二是这套 <a href="https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Mutation_events">Mutation 事件</a>有很大的性能问题,
+二是这套 <a target="_blank" href="https://developer.mozilla.org/en-US/docs/Web/Guide/Events/Mutation_events">Mutation 事件</a>有很大的性能问题,
 已经快废弃了.</li>
-<li>通过 <a href="https://developer.mozilla.org/zh-CN/docs/Web/API/MutationObserver">MutationObserver</a> 监听, 注意 IE 10
-及以下版本需要使用 <a href="https://github.com/megawac/MutationObserver.js">polyfill</a>.</li>
+<li>通过 <a target="_blank" href="https://developer.mozilla.org/zh-CN/docs/Web/API/MutationObserver">MutationObserver</a> 监听, 注意 IE 10
+及以下版本需要使用 <a target="_blank" href="https://github.com/megawac/MutationObserver.js">polyfill</a>.</li>
 </ol>
 <h2>思路三: 在独立的 web worker 内 setInterval</h2>
 <h3>1. worker 简介</h3>
@@ -125,12 +136,12 @@ worker.onmessage = function () {
   document.body.style.backgroundColor = &#39;black&#39;
 }
 </code></pre>
-<p>详见 <a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Workers_API/Using_web_workers#%E5%B5%8C%E5%85%A5%E5%BC%8F_worker">Worker</a>
-和 <a href="https://developer.mozilla.org/zh-CN/docs/Web/API/Blob">Blob</a>.<br>这种方式产生的 JavaScript 资源会出现在 <code>Network -&gt; Other</code> 而不是 <code>Network -&gt; JS</code> 内, 并且不会以 <code>&lt;script&gt;</code> 标签的形式体现在
+<p>详见 <a target="_blank" href="https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Workers_API/Using_web_workers#%E5%B5%8C%E5%85%A5%E5%BC%8F_worker">Worker</a>
+和 <a target="_blank" href="https://developer.mozilla.org/zh-CN/docs/Web/API/Blob">Blob</a>.<br>这种方式产生的 JavaScript 资源会出现在 <code>Network -&gt; Other</code> 而不是 <code>Network -&gt; JS</code> 内, 并且不会以 <code>&lt;script&gt;</code> 标签的形式体现在
 DOM 树中, 降低了篡改的可能.</p>
 <p><img src="../images/%E6%B0%B4%E5%8D%B0%E5%92%8C%E9%98%B2%E7%AF%A1%E6%94%B9/worker-tab-pos.png" alt=""></p>
 <h3>3. 问题</h3>
-<p>如前所述, 通过<a href="https://developers.google.com/web/tools/chrome-devtools/console/#execution-context">执行环境选择器</a>
+<p>如前所述, 通过<a target="_blank" href="https://developers.google.com/web/tools/chrome-devtools/console/#execution-context">执行环境选择器</a>
 可以选择嵌入页面的 web
 worker 上下文. 选择之后在 console 里清除一次计时器, 在修改 <code>&lt;body&gt;</code> 的背景颜色, 篡改再次成功了.</p>
 <h3>4. 优化</h3>
@@ -203,11 +214,13 @@ threadFromMain()
 <h3>总结</h3>
 <p>能想到的就是这几种方式, 实操起来可能有点小题大做, 而且稳妥的防篡改一定是依赖于后端的.  </p>
 
+          </div>
+        </div>
+        <footer class="blog-footer">
+          <p class="blog-footer-code">
+            Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
+          </p>
+        </footer>
       </div>
-      <footer class="blog-footer">
-        <p class="blog-footer-code">
-          Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
-        </p>
-      </footer>
     </body>
   </html>

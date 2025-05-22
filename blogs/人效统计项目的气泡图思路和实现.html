@@ -6,13 +6,24 @@
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="stylesheet" href="../styles/global.css">
       <link rel="icon" href="../styles/avatar.png">
-      <link rel="stylesheet" href="../utils/highlightjs/default.min.css">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-macchiato.css" media="(prefers-color-scheme: dark)">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-latte.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
       <script src="../utils/highlightjs/highlight.min.js"></script>
       <script>hljs.highlightAll()</script>
     </head>
     <body>
-      <div class="blog-content markdown-body">
-        <h1>人效统计项目的气泡图思路和实现</h1>
+      <div class="container">
+        <div class="blog-nav">
+          <ul>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+            <li><a href="">faflfj</a></li>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+          </ul>
+        </div>
+<!--        <div class="nav-trigger" />-->
+        <div class="blog-content-wrap">
+          <div class="blog-content markdown-body">
+            <h1>人效统计项目的气泡图思路和实现</h1>
 <h2>需求</h2>
 <p>如下, 有一个中心元素, 其周围有 3~6 个元素, 按各自权重呈现不同的大小, 称为气泡图.</p>
 <p><img src="../images/%E6%B0%94%E6%B3%A1%E5%9B%BE/%E9%9C%80%E6%B1%821.png" alt="">
@@ -170,11 +181,13 @@
 </ol>
 <p>旋转长条容器而不是气泡, 原因是:<br>前者默认的 <code>transform-origin</code> 是默认的 <code>center</code>, 即中心元素; 否则还要单独处理后者的 <code>transform-origin</code>.<br>上述逻辑可以用 sass 的函数实现, 个人认为 js 处理更易于维护</p>
 
+          </div>
+        </div>
+        <footer class="blog-footer">
+          <p class="blog-footer-code">
+            Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
+          </p>
+        </footer>
       </div>
-      <footer class="blog-footer">
-        <p class="blog-footer-code">
-          Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
-        </p>
-      </footer>
     </body>
   </html>

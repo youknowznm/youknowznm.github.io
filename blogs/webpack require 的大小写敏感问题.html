@@ -6,33 +6,46 @@
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="stylesheet" href="../styles/global.css">
       <link rel="icon" href="../styles/avatar.png">
-      <link rel="stylesheet" href="../utils/highlightjs/default.min.css">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-macchiato.css" media="(prefers-color-scheme: dark)">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-latte.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
       <script src="../utils/highlightjs/highlight.min.js"></script>
       <script>hljs.highlightAll()</script>
     </head>
     <body>
-      <div class="blog-content markdown-body">
-        <h1>webpack require 的大小写敏感问题</h1>
+      <div class="container">
+        <div class="blog-nav">
+          <ul>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+            <li><a href="">faflfj</a></li>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+          </ul>
+        </div>
+<!--        <div class="nav-trigger" />-->
+        <div class="blog-content-wrap">
+          <div class="blog-content markdown-body">
+            <h1>webpack require 的大小写敏感问题</h1>
 <h2>问题</h2>
-<p>维护一个 react 老项目时, 遇到了本地开发环境正常, 测试环境进入指定的路由, 按需加载模块时, 报 <code>module not found</code> 的错误.</p>
-<p>排查后发现 <code>require</code> 的路径和实际路径的大小写不一致, 修复后问题解决.</p>
-<p>原因很简单, 就是 Linux 文件系统大小写敏感, Windows 和 MacOS 不敏感.</p>
+<p>维护一个 react 老项目时, 遇到了本地开发环境正常, 测试环境进入指定的路由, 按需加载模块时, 报 <code>module not found</code> 的错误.
+排查后发现 <code>require</code> 的路径和实际路径的大小写不一致, 修复后问题解决. 原因很简单, 就是 Linux 文件系统大小写敏感, Windows
+和 MacOS 不敏感.</p>
 <h2>处理方案</h2>
-<p>善用现代编辑器的自动补全, 一般不会出现这种问题.<br>谨慎起见, 也可以考虑加个 <a href="https://github.com/Urthen/case-sensitive-paths-webpack-plugin">CaseSensitivePathsPlugin</a>,
+<p>善用现代编辑器的自动补全, 一般不会出现这种问题.<br>谨慎起见, 也可以考虑加个 <a target="_blank" href="https://github.com/Urthen/case-sensitive-paths-webpack-plugin">CaseSensitivePathsPlugin</a>,
 在本地开发时提前发现.</p>
 <h2>发散</h2>
 <p>大小写不敏感还可能导致其它开发中的问题. 例如, 在 MacOS 系统中修改仓库中的文件名, 比如: <code>view.js</code> -&gt; <code>View.js</code>, 会发现
 git status 并没有变更.</p>
 <p>简易的解决方案是: 先将文件重命名为另外的一个名称, 再执行一次重命名改回正确的文件名. 比如将 <code>view.js</code> 改成 <code>viewxxx.js</code>,
 commit 后再改成 <code>View.js</code>.</p>
-<p>其它方案可参考<a href="https://stackoverflow.com/questions/17683458/how-do-i-commit-case-sensitive-only-filename-changes-in-git">这里</a>,
+<p>其它方案可参考<a target="_blank" href="https://stackoverflow.com/questions/17683458/how-do-i-commit-case-sensitive-only-filename-changes-in-git">这里</a>,
 但综合来看还不如上面的步骤.</p>
 
+          </div>
+        </div>
+        <footer class="blog-footer">
+          <p class="blog-footer-code">
+            Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
+          </p>
+        </footer>
       </div>
-      <footer class="blog-footer">
-        <p class="blog-footer-code">
-          Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
-        </p>
-      </footer>
     </body>
   </html>

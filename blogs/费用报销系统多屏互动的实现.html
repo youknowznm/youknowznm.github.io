@@ -6,14 +6,25 @@
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="stylesheet" href="../styles/global.css">
       <link rel="icon" href="../styles/avatar.png">
-      <link rel="stylesheet" href="../utils/highlightjs/default.min.css">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-macchiato.css" media="(prefers-color-scheme: dark)">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-latte.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
       <script src="../utils/highlightjs/highlight.min.js"></script>
       <script>hljs.highlightAll()</script>
     </head>
     <body>
-      <div class="blog-content markdown-body">
-        <h1>费用报销系统多屏互动的实现</h1>
-<p>本文为<a href="https://youknowznm.github.io/blogs/%E8%B4%B9%E7%94%A8%E6%8A%A5%E9%94%80%E7%B3%BB%E7%BB%9F%E5%B1%95%E5%BC%80%E8%A1%A8%E6%A0%BC%E8%A1%8C%E7%9A%84%E5%AE%9E%E7%8E%B0">费用报销系统展开表格行的实现</a>的后续.</p>
+      <div class="container">
+        <div class="blog-nav">
+          <ul>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+            <li><a href="">faflfj</a></li>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+          </ul>
+        </div>
+<!--        <div class="nav-trigger" />-->
+        <div class="blog-content-wrap">
+          <div class="blog-content markdown-body">
+            <h1>费用报销系统多屏互动的实现</h1>
+<p>本文为<a target="_blank" href="https://youknowznm.github.io/blogs/费用报销系统展开表格行的实现">费用报销系统展开表格行的实现</a>的后续.</p>
 <h2>需求</h2>
 <p>公司即时通讯 Hi app 内嵌的移动报销 web 应用, 可提供:</p>
 <ul>
@@ -166,7 +177,7 @@ $updated-anim-duration: 1.5s;
 </code></pre>
 <h2>难点二: PC 端编辑某行时, 移动端发生更新的处理</h2>
 <p>多屏互动时数据数组的改动来源有两个: socket
-信息和<a href="https://youknowznm.github.io/blogs/%E8%B4%B9%E7%94%A8%E6%8A%A5%E9%94%80%E7%B3%BB%E7%BB%9F%E5%B1%95%E5%BC%80%E8%A1%A8%E6%A0%BC%E8%A1%8C%E7%9A%84%E5%AE%9E%E7%8E%B0">之前提到的行内编辑器</a>.<br>对这两种来源的协同处理也是技术难点之一.</p>
+信息和<a target="_blank" href="https://youknowznm.github.io/blogs/费用报销系统展开表格行的实现">之前提到的行内编辑器</a>.<br>对这两种来源的协同处理也是技术难点之一.</p>
 <p>PC 端编辑某行时, 移动端也对某行进行了增/删/改, 有十种左右的可能场景. 总结为:</p>
 <ol>
 <li>移动端修改了 PC 端正在编辑的行, 需要用户确认保留哪份数据</li>
@@ -174,11 +185,13 @@ $updated-anim-duration: 1.5s;
 <li>PC 端编辑某行, 移动端增/删: 更新后重新计算被编辑行的索引, 并恢复之前编辑的内容</li>
 </ol>
 
+          </div>
+        </div>
+        <footer class="blog-footer">
+          <p class="blog-footer-code">
+            Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
+          </p>
+        </footer>
       </div>
-      <footer class="blog-footer">
-        <p class="blog-footer-code">
-          Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
-        </p>
-      </footer>
     </body>
   </html>

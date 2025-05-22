@@ -6,13 +6,24 @@
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="stylesheet" href="../styles/global.css">
       <link rel="icon" href="../styles/avatar.png">
-      <link rel="stylesheet" href="../utils/highlightjs/default.min.css">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-macchiato.css" media="(prefers-color-scheme: dark)">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-latte.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
       <script src="../utils/highlightjs/highlight.min.js"></script>
       <script>hljs.highlightAll()</script>
     </head>
     <body>
-      <div class="blog-content markdown-body">
-        <h1>尝试实现一个低配版 express</h1>
+      <div class="container">
+        <div class="blog-nav">
+          <ul>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+            <li><a href="">faflfj</a></li>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+          </ul>
+        </div>
+<!--        <div class="nav-trigger" />-->
+        <div class="blog-content-wrap">
+          <div class="blog-content markdown-body">
+            <h1>尝试实现一个低配版 express</h1>
 <p>使用 nodejs 时不一定用到 express 这样重型的框架. 例如将其作为站点的 API 层, 不负责渲染数据到模板里并返回, 所有路由以
 JSON 结束响应. 这里尝试实现一个简单的服务器, 提供和 express
 相似的路由和中间件接口.</p>
@@ -135,7 +146,7 @@ listen 成员方法.</p>
 }
 </code></pre>
 <p>以上就基本实现了路由池的功能, 关键思路自己以前有想到过了.
-刚好最近看了一篇<a href="https://saul-mirone.github.io/2017/01/08/express-core/">文章</a>, 里面提到了中间件的实现思路,
+刚好最近看了一篇<a target="_blank" href="https://saul-mirone.github.io/2017/01/08/express-core/">文章</a>, 里面提到了中间件的实现思路,
 可以改进一下以上的代码.</p>
 <p>以前自己用 express 时没有很深入, 对 <code>app.use</code> 方法的了解只是: 它是一个针对全局所有路由的逻辑, 可以用于增强, 修改或过滤请求,
 例如:</p>
@@ -167,8 +178,8 @@ app.get(&#39;/secret&#39;, (req, res) =&gt; {
 </code></pre>
 <p><code>app.use</code> 和 <code>app.get</code> 的用法很像, 那么为什么不把 use 也看成一个路由的方法呢？
 <code>use</code> 的特性之一是它所接受的监听函数参数, 可以接受第三个参数 <code>next</code>. next
-也是<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/function*">生成器函数</a>
-所返回的<a href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator">生成器对象</a>
+也是<a target="_blank" href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/function*">生成器函数</a>
+所返回的<a target="_blank" href="https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Generator">生成器对象</a>
 的方法之一:</p>
 <pre><code class="language-javascript">const generator = function* (arr) {
   yield* arr
@@ -267,13 +278,15 @@ class MiniExpress {
 <h2>总结</h2>
 <p>以上只实现了 express 很基础的功能, 像静态文件处理, 模板渲染这里都没有实现, 到实际项目中再按需添加吧. 不过大部分 express
 可用的中间件在这个框架中也是可用的.</p>
-<p>完整代码在<a href="https://github.com/youknowznm/mini-express/blob/master/mini-express.js">这里</a>. </p>
+<p>完整代码在<a target="_blank" href="https://github.com/youknowznm/mini-express/blob/master/mini-express.js">这里</a>. </p>
 
+          </div>
+        </div>
+        <footer class="blog-footer">
+          <p class="blog-footer-code">
+            Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
+          </p>
+        </footer>
       </div>
-      <footer class="blog-footer">
-        <p class="blog-footer-code">
-          Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
-        </p>
-      </footer>
     </body>
   </html>

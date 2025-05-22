@@ -6,13 +6,24 @@
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <link rel="stylesheet" href="../styles/global.css">
       <link rel="icon" href="../styles/avatar.png">
-      <link rel="stylesheet" href="../utils/highlightjs/default.min.css">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-macchiato.css" media="(prefers-color-scheme: dark)">
+      <link rel="stylesheet" href="../utils/highlightjs/catppuccin-latte.css" media="(prefers-color-scheme: light), (prefers-color-scheme: no-preference)">
       <script src="../utils/highlightjs/highlight.min.js"></script>
       <script>hljs.highlightAll()</script>
     </head>
     <body>
-      <div class="blog-content markdown-body">
-        <h1>基于 MutationObserver 的父子窗体间通信</h1>
+      <div class="container">
+        <div class="blog-nav">
+          <ul>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+            <li><a href="">faflfj</a></li>
+            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
+          </ul>
+        </div>
+<!--        <div class="nav-trigger" />-->
+        <div class="blog-content-wrap">
+          <div class="blog-content markdown-body">
+            <h1>基于 MutationObserver 的父子窗体间通信</h1>
 <h2>基础知识</h2>
 <ul>
 <li>一个浏览器的多个标签页和被嵌入的页都是独立的浏览上下文, 每个上下文都有独立的 <code>window</code> 对象, 之间互不干扰</li>
@@ -153,14 +164,16 @@ observer.observe(document.querySelector(&#39;.target-area&#39; /* 观察 body �
 </code></pre>
 <h3>不足</h3>
 <ul>
-<li>IE11 及以上才支持, 可按需使用 <a href="https://github.com/megawac/MutationObserver.js">polyfill</a></li>
+<li>IE11 及以上才支持, 可按需使用 <a target="_blank" href="https://github.com/megawac/MutationObserver.js">polyfill</a></li>
 </ul>
 
+          </div>
+        </div>
+        <footer class="blog-footer">
+          <p class="blog-footer-code">
+            Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
+          </p>
+        </footer>
       </div>
-      <footer class="blog-footer">
-        <p class="blog-footer-code">
-          Made with ❤️ by <a href="https://github.com/youknowznm" target="_blank" class="blog-footer-code">youknowznm</a>.
-        </p>
-      </footer>
     </body>
   </html>

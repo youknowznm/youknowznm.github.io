@@ -1,8 +1,11 @@
-html,
-body {
-  max-width: 100vw;
-  overflow-x: hidden;
+html {
   font-size: 14px;
+}
+
+body {
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
   margin: 0;
   padding: 0;
 }
@@ -10,28 +13,81 @@ body {
 @font-face {
   font-family: 'Geist';
   src: url('./Geist[wght].ttf') format('truetype');
-  font-weight: 400 600;
+  font-weight: 100 900;
   font-style: normal;
 }
 
 @font-face {
   font-family: 'Geist Mono';
   src: url('./GeistMono[wght].ttf') format('truetype');
-  font-weight: 400 600;
+  font-weight: 100 900;
   font-style: normal;
 }
 
+.container {
+  position: relative;
+  height: 100%;
+  background-color: var(--bgColor-default);
+  display: flex;
+}
+
+.blog-nav {
+  position: relative;
+  width: 300px;
+  height: 100%;
+  padding: 0 5px 0 15px;
+  border-right: 1px solid var(--borderColor-muted);
+  /*display: none;*/
+  overflow-y: auto;
+}
+
+.blog-content-wrap {
+  display: flex;
+  justify-content: center;
+  flex: 1;
+  /*height: 100%;*/
+}
+
+.blog-content {
+  overflow: auto;
+  font-family: Geist, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  font-size: 14px;
+  line-height: 1.5;
+  word-wrap: break-word;
+  max-width: 800px;
+  min-width: 360px;
+  padding: 16px;
+}
+
 .blog-footer {
+  display: none;
   text-align: center;
   font-size: 12px;
-  margin-bottom: 36px;
+  margin-bottom: 16px;
 }
 
 .blog-footer-code {
   font-family: "Geist Mono", monospace;
+  color: var(--fgColor-muted);
 }
 
-.markdown-body {
+
+.nav-trigger {
+  position: fixed;
+  width: 10px;
+  height: 10px;
+  bottom: 0;
+  left: 10px;
+  background-color: blue;
+}
+
+body.show-nav .blog-nav {
+  display: block;
+}
+
+/* container variants */
+
+.container {
   --base-size-4: 0.25rem;
   --base-size-8: 0.5rem;
   --base-size-16: 1rem;
@@ -45,15 +101,7 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  body {
-    background-color: #0d1117;
-  }
-
-  .blog-footer-code {
-    color: #9198a1;
-  }
-
-  .markdown-body, [data-theme="dark"] {
+  .container, [data-theme="dark"] {
     /* dark */
     color-scheme: dark;
     --focus-outlineColor: #1f6feb;
@@ -110,15 +158,7 @@ body {
 }
 
 @media (prefers-color-scheme: light) {
-  body {
-    background-color: #ffffff;
-  }
-
-  .blog-footer-code {
-    color: #59636e;
-  }
-
-  .markdown-body, [data-theme="light"] {
+  .container, [data-theme="light"] {
     /* light */
     color-scheme: light;
     --focus-outlineColor: #0969da;
@@ -174,19 +214,13 @@ body {
   }
 }
 
+/* github markdown style */
+
 .markdown-body {
   -ms-text-size-adjust: 100%;
   -webkit-text-size-adjust: 100%;
-  margin: 20px auto;
   color: var(--fgColor-default);
   background-color: var(--bgColor-default);
-  font-family: Geist, -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  font-size: 14px;
-  line-height: 1.5;
-  word-wrap: break-word;
-  max-width: 800px;
-  min-width: 360px;
-  padding: 16px;
 }
 
 .markdown-body .octicon {
