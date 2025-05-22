@@ -20,18 +20,8 @@ const getPageHtml = (blogName, blogHtml) => `
     </head>
     <body>
       <div class="container">
-        <div class="blog-nav">
-          <ul>
-            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
-            <li><a href="">faflfj</a></li>
-            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
-          </ul>
-        </div>
-<!--        <div class="nav-trigger" />-->
-        <div class="blog-content-wrap">
-          <div class="blog-content markdown-body">
-            ${blogHtml}
-          </div>
+        <div class="blog-content markdown-body">
+          ${blogHtml}
         </div>
         <footer class="blog-footer">
           <p class="blog-footer-code">

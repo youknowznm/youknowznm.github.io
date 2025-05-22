@@ -13,17 +13,8 @@
     </head>
     <body>
       <div class="container">
-        <div class="blog-nav">
-          <ul>
-            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
-            <li><a href="">faflfj</a></li>
-            <li><a href="">faflfja;dlfjad;lfjdlfja;fjaldfj;daf;s</a></li>
-          </ul>
-        </div>
-<!--        <div class="nav-trigger" />-->
-        <div class="blog-content-wrap">
-          <div class="blog-content markdown-body">
-            <h1>webpack require 的大小写敏感问题</h1>
+        <div class="blog-content markdown-body">
+          <h1>webpack require 的大小写敏感问题</h1>
 <h2>问题</h2>
 <p>维护一个 react 老项目时, 遇到了本地开发环境正常, 测试环境进入指定的路由, 按需加载模块时, 报 <code>module not found</code> 的错误.
 排查后发现 <code>require</code> 的路径和实际路径的大小写不一致, 修复后问题解决. 原因很简单, 就是 Linux 文件系统大小写敏感, Windows
@@ -39,7 +30,6 @@ commit 后再改成 <code>View.js</code>.</p>
 <p>其它方案可参考<a target="_blank" href="https://stackoverflow.com/questions/17683458/how-do-i-commit-case-sensitive-only-filename-changes-in-git">这里</a>,
 但综合来看还不如上面的步骤.</p>
 
-          </div>
         </div>
         <footer class="blog-footer">
           <p class="blog-footer-code">
