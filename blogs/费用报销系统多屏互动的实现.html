@@ -62,7 +62,7 @@
 </blockquote>
 <h2>数据流动图示</h2>
 <p>总体的数据流动如下图.</p>
-<p><img src="/files/cJiCdx6_y7WNkaz.png" alt=""></p>
+<p><img src="../images/%E5%A4%9A%E5%B1%8F%E4%BA%92%E5%8A%A8/%E5%A4%9A%E5%B1%8F%E4%BA%92%E5%8A%A8%E6%95%B0%E6%8D%AE%E6%B5%81%E5%8A%A8.jpg" alt=""></p>
 <h2>难点一: 不受 react 控制的动画</h2>
 <p>如需求描述, 移动端增/删/改成功后, 该行的改动要在 PC 端以动画的形式体现. 但所使用的自研 <code>Table</code> 组件有一个缺陷:</p>
 <blockquote>
@@ -169,7 +169,9 @@ $updated-anim-duration: 1.5s;
 <h2>难点二: PC 端编辑某行时, 移动端发生更新的处理</h2>
 <p>多屏互动时数据数组的改动来源有两个: socket
 信息和<a target="_blank" href="https://youknowznm.github.io/blogs/费用报销系统展开表格行的实现">之前提到的行内编辑器</a>.<br>对这两种来源的协同处理也是技术难点之一.</p>
-<p>PC 端编辑某行时, 移动端也对某行进行了增/删/改, 有十种左右的可能场景. 总结为:</p>
+<p>PC 端编辑某行时, 移动端也对某行进行了增/删/改, 有十种左右的可能场景:</p>
+<p><img src="../images/%E5%A4%9A%E5%B1%8F%E4%BA%92%E5%8A%A8/%E5%A4%9A%E5%B1%8F%E4%BA%92%E5%8A%A8%E6%9B%B4%E6%96%B0%E5%9C%BA%E6%99%AF%E7%BB%84%E5%90%88.jpg" alt=""></p>
+<p>总结为:</p>
 <ol>
 <li>移动端修改了 PC 端正在编辑的行, 需要用户确认保留哪份数据</li>
 <li>移动端删除了 PC 端正在编辑的行, 提示并移除当前行</li>
